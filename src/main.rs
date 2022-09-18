@@ -26,7 +26,7 @@ async fn get_my_issues() -> Vec<Issue> {
     let token = get_github_personal_access_token();
     let client = reqwest::Client::new();
     let res = client
-        .get("https://api.github.com/issues")
+        .get("https://api.github.com/issues?filter=assigned&state=open&labels=Priority: High")
         .header("User-Agent", "reqwest")
         .header("Accept", "application/vnd.github+json")
         .header("Authorization", format!("Bearer {}", token))
