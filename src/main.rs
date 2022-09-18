@@ -79,18 +79,30 @@ async fn notify_by_slack(text: String) {
     }
 }
 
+fn create_payload_for_slack(issues: Vec<Issue>) -> String {
+    let mut payload = String::new();
+    payload.push_str("@channel\n優先度が高いタスク一覧\n");
+    for issue in issues {
+        let issue_url = issue.url;
+        let issue_title = issue.title;
+        payload.push_str(&format!("- <{}|{}>\n", issue_url, issue_title));
+    }
+    payload
+}
+
 #[tokio::main]
 async fn main() {
     let my_issues = get_my_issues().await;
 
     // print my_issues length
     println!("my_issues length: {}", my_issues.len());
-    let text = format!("my_issues length: {}", my_issues.len());
     // print issues
-    for issue in my_issues {
-        println!("{:?}", issue);
-    }
+    // for issue in my_issues {
+    //     println!("{:?}", issue);
+    // }
+
+    let payload = create_payload_for_slack(my_issues);
 
     // notify by slack
-    notify_by_slack(text).await;
+    notify_by_slack(payload).await;
 }
