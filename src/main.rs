@@ -1,10 +1,19 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+struct Label {
+    id: i64,
+    name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct Issue {
-    id: i32,
+    id: i64,
     title: String,
     url: String,
+    state: String,
+    body: Option<String>,
+    labels: Option<Vec<Label>>,
 }
 
 fn get_github_personal_access_token() -> String {
@@ -48,6 +57,9 @@ async fn get_my_issues() -> Vec<Issue> {
 #[tokio::main]
 async fn main() {
     let my_issues = get_my_issues().await;
+
+    // print my_issues length
+    println!("my_issues length: {}", my_issues.len());
     // print issues
     for issue in my_issues {
         println!("{:?}", issue);
