@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Label {
@@ -19,6 +20,12 @@ struct Issue {
 fn get_github_personal_access_token() -> String {
     // get token from environment variable
     let token = std::env::var("GITHUB_PERSONAL_ACCESS_TOKEN").unwrap();
+    token
+}
+
+fn get_slack_webhook_url_from_env() -> String {
+    // get token from environment variable
+    let token = std::env::var("SLACK_WEBHOOK_URL").unwrap();
     token
 }
 
@@ -54,14 +61,36 @@ async fn get_my_issues() -> Vec<Issue> {
     issues
 }
 
+async fn notify_by_slack(text: String) {
+    let webhook_url = get_slack_webhook_url_from_env();
+    let client = reqwest::Client::new();
+    let res = client
+        .post(webhook_url)
+        .json(&json!({ "text": text }))
+        .send()
+        .await;
+    match res {
+        Ok(_res) => {
+            println!("Notify by Slack OK");
+        }
+        Err(err) => {
+            println!("Notify by Slack Error: {}", err);
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let my_issues = get_my_issues().await;
 
     // print my_issues length
     println!("my_issues length: {}", my_issues.len());
+    let text = format!("my_issues length: {}", my_issues.len());
     // print issues
     for issue in my_issues {
         println!("{:?}", issue);
     }
+
+    // notify by slack
+    notify_by_slack(text).await;
 }
