@@ -13,6 +13,9 @@ RUN cargo build --release
 # runtime stage
 FROM debian:bullseye-slim
 
+RUN apt update
+RUN apt install -y ca-certificates
+
 COPY --from=build-stage /app/target/release/my-github-notification /usr/bin/my-github-notification
 
 ENTRYPOINT ["/usr/bin/my-github-notification"]
