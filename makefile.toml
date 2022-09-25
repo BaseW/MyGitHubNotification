@@ -26,7 +26,7 @@ dependencies = ["clean"]
 
 [tasks.docker-build]
 command = "docker"
-args = ["build", "-t", "my-github-notification-image", "."]
+args = ["build", "-t", "my-github-notification-image", ".", "--target", "build-stage", "-t", "my-github-notification-image:build-stage"]
 dependencies = ["format"]
 
 [tasks.docker-tag]
@@ -37,3 +37,11 @@ dependencies = ["docker-build"]
 [tasks.docker-push]
 command = "docker"
 args = ["push", "${ECR_URI}/my-github-notification-image:latest"]
+
+[tasks.docker-run]
+command = "docker"
+args = ["run", "--rm", "--env-file", ".env", "my-github-notification-image:latest"]
+dependencies = [
+  "docker-build",
+  "docker-tag",
+]
