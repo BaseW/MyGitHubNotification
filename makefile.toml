@@ -26,7 +26,7 @@ dependencies = ["clean"]
 
 [tasks.docker-build]
 command = "docker"
-args = ["build", "-t", "my-github-notification-image", ".", "--target", "build-stage", "-t", "my-github-notification-image:build-stage"]
+args = ["build", "-t", "my-github-notification-image:latest", "."]
 dependencies = ["format"]
 
 [tasks.docker-tag]
