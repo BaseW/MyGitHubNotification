@@ -45,3 +45,6 @@ dependencies = [
   "docker-build",
   "docker-tag",
 ]
+
+[tasks.edit-env]
+command = "./bin/edit-env.sh"
