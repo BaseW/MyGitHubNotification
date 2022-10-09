@@ -2,9 +2,7 @@ name: Deploy to Amazon ECS
 
 on:
   push:
-    # branches: [ "main" ]
-    # TODO: fix before merge
-    branches: [ "10-fix-json-path" ]
+    branches: [ "main" ]
 
 env:
   AWS_REGION: ap-northeast-1
