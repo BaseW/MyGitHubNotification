@@ -20,7 +20,7 @@ diff=`diff $TMP_DIR/.env.bak $TMP_DIR/.env`
 # echo diff, and check dialog
 if [ "$diff" != "" ]; then
   echo "diff:"
-  echo $diff
+  echo -n $diff
   echo "Do you want to upload .env to s3? [y/N]"
   read answer
   if [ "$answer" = "y" ]; then
