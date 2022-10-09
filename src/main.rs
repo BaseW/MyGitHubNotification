@@ -44,35 +44,8 @@ fn get_slack_webhook_url_from_env() -> String {
     token
 }
 
-async fn check_github_token_justification(token: &str) -> bool {
-    // check if the token is justified
-    let url = "https://api.github.com/user".to_string();
-    let client = reqwest::Client::new();
-    let response = client
-        .get(&url)
-        .header("Authorization", format!("Bearer {}", token))
-        .send()
-        .await
-        .unwrap();
-    let status = response.status();
-    if status.is_success() {
-        true
-    } else {
-        false
-    }
-}
-
 async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     let token = get_github_personal_access_token();
-    // check github token justification
-    let is_justified = check_github_token_justification(&token).await;
-    if !is_justified {
-        let error_message = "Github token is not justified";
-        println!("{}", error_message);
-        return Err(GetIssueError {
-            message: error_message.to_string(),
-        });
-    }
 
     let client = reqwest::Client::new();
     let res = client
