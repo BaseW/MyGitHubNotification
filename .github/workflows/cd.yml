@@ -2,14 +2,16 @@ name: Deploy to Amazon ECS
 
 on:
   push:
-    branches: [ "main" ]
+    # branches: [ "main" ]
+    # TODO: fix before merge
+    branches: [ "10-fix-json-path" ]
 
 env:
   AWS_REGION: ap-northeast-1
   ECR_REPOSITORY: my-github-notification-image
   ECS_SERVICE: my-github-notification
   ECS_CLUSTER: default
-  ECS_TASK_DEFINITION: .aws/task-definition.json
+  ECS_TASK_DEFINITION: .aws/ecs_task_definition.json
   CONTAINER_NAME: my-github-notification-container           # set this to the name of the container in the
                                               # containerDefinitions section of your task definition
 
