@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::error;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Label {
@@ -17,6 +18,20 @@ struct Issue {
     labels: Option<Vec<Label>>,
 }
 
+#[derive(Debug, Clone)]
+struct GetIssueError {
+    message: String,
+}
+
+// implement for GetIssueError
+impl std::fmt::Display for GetIssueError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl error::Error for GetIssueError {}
+
 fn get_github_personal_access_token() -> String {
     // get token from environment variable
     let token = std::env::var("GITHUB_PERSONAL_ACCESS_TOKEN").unwrap();
@@ -29,8 +44,9 @@ fn get_slack_webhook_url_from_env() -> String {
     token
 }
 
-async fn get_my_issues() -> Vec<Issue> {
+async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     let token = get_github_personal_access_token();
+
     let client = reqwest::Client::new();
     let res = client
         .get("https://api.github.com/issues?filter=assigned&state=open&labels=Priority: High")
@@ -47,18 +63,23 @@ async fn get_my_issues() -> Vec<Issue> {
             match parsed_issues {
                 Ok(issues) => issues,
                 Err(e) => {
-                    println!("Parse Issues Error: {}", e);
-                    Vec::new()
+                    let error_message = format!("Parse Issues Error: {}", e);
+                    println!("{}", error_message);
+                    return Err(GetIssueError {
+                        message: error_message,
+                    });
                 }
             }
         }
         Err(err) => {
-            println!("Fetch Issues Error: {}", err);
-            let empty_issues: Vec<Issue> = Vec::new();
-            empty_issues
+            let error_message = format!("Fetch Issues Error: {}", err);
+            println!("{}", error_message);
+            return Err(GetIssueError {
+                message: error_message,
+            });
         }
     };
-    issues
+    Ok(issues)
 }
 
 async fn notify_by_slack(text: String) {
@@ -79,27 +100,33 @@ async fn notify_by_slack(text: String) {
     }
 }
 
-fn create_payload_for_slack(issues: Vec<Issue>) -> String {
+fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> String {
     let mut payload = String::new();
-    payload.push_str("@channel\n優先度が高いタスク一覧\n");
-    for issue in issues {
-        let issue_url = issue.url;
-        let issue_title = issue.title;
-        payload.push_str(&format!("- <{}|{}>\n", issue_url, issue_title));
+
+    match issues {
+        Ok(issues) => {
+            payload.push_str("@channel\n優先度が高いタスク一覧\n");
+            if issues.len() == 0 {
+                payload = "なし".to_string();
+            } else {
+                for issue in issues {
+                    let issue_url = issue.url;
+                    let issue_title = issue.title;
+                    payload.push_str(&format!("- <{}|{}>\n", issue_url, issue_title));
+                }
+            }
+        }
+        Err(e) => {
+            payload = e.message;
+        }
     }
+
     payload
 }
 
 #[tokio::main]
 async fn main() {
     let my_issues = get_my_issues().await;
-
-    // print my_issues length
-    println!("my_issues length: {}", my_issues.len());
-    // print issues
-    // for issue in my_issues {
-    //     println!("{:?}", issue);
-    // }
 
     let payload = create_payload_for_slack(my_issues);
 
