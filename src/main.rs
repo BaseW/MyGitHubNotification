@@ -58,6 +58,13 @@ async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     // if res is Ok, print "OK", otherwise print "Error"
     let issues = match res {
         Ok(res) => {
+            // if status is not 200, return error
+            if res.status() != 200 {
+                return Err(GetIssueError {
+                    message: format!("status code is not 200: {}", res.status()),
+                });
+            }
+
             println!("Fetch Issues OK");
             let parsed_issues = res.json::<Vec<Issue>>().await;
             match parsed_issues {
