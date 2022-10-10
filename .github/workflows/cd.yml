@@ -3,6 +3,13 @@ name: Deploy to Amazon ECS
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "Dockerfile"
+      - ".github/workflows/cd.yml"
+  workflow_dispatch:
 
 env:
   AWS_REGION: ap-northeast-1
@@ -10,8 +17,7 @@ env:
   ECS_SERVICE: my-github-notification
   ECS_CLUSTER: default
   ECS_TASK_DEFINITION: .aws/ecs_task_definition.json
-  CONTAINER_NAME: my-github-notification-container           # set this to the name of the container in the
-                                              # containerDefinitions section of your task definition
+  CONTAINER_NAME: my-github-notification-container
 
 permissions:
   contents: read
