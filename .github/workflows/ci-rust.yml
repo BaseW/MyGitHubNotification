@@ -19,13 +19,6 @@ jobs:
     steps:
     - name: Clone repository
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 0 # 0 にすると全履歴を fecth するようになります。
-
-    - name: Install Python
-      uses: actions/setup-python@v2
-    - name: Restore mtime
-      run: python ./git-restore-mtime.py
 
     - uses: actions/cache@v2
       with:
