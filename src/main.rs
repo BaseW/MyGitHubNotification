@@ -34,14 +34,14 @@ impl error::Error for GetIssueError {}
 
 fn get_github_personal_access_token() -> String {
     // get token from environment variable
-    let token = std::env::var("GITHUB_PERSONAL_ACCESS_TOKEN").unwrap();
-    token
+    
+    std::env::var("GITHUB_PERSONAL_ACCESS_TOKEN").unwrap()
 }
 
 fn get_slack_webhook_url_from_env() -> String {
     // get token from environment variable
-    let token = std::env::var("SLACK_WEBHOOK_URL").unwrap();
-    token
+    
+    std::env::var("SLACK_WEBHOOK_URL").unwrap()
 }
 
 async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
@@ -113,7 +113,7 @@ fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> String
     match issues {
         Ok(issues) => {
             payload.push_str("@channel\n優先度が高いタスク一覧\n");
-            if issues.len() == 0 {
+            if issues.is_empty() {
                 payload = "なし".to_string();
             } else {
                 for issue in issues {
