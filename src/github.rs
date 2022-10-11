@@ -18,8 +18,10 @@ pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
         Ok(res) => {
             // if status is not 200, return error
             if res.status() != 200 {
+                let error_message = format!("status code is not 200: {}", res.status());
+                println!("{}", error_message);
                 return Err(GetIssueError {
-                    message: format!("status code is not 200: {}", res.status()),
+                    message: error_message,
                 });
             }
 
