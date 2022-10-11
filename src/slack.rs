@@ -28,7 +28,7 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
         Ok(issues) => {
             payload.push_str("@channel\n優先度が高いタスク一覧\n");
             if issues.is_empty() {
-                payload = "なし".to_string();
+                payload.push_str("なし");
             } else {
                 for issue in issues {
                     let issue_url = issue.url;
