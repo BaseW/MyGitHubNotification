@@ -38,7 +38,7 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
                             let mut label_names = String::new();
                             for label in labels {
                                 label_names.push_str(&label.name);
-                                label_names.push_str(" ");
+                                label_names.push(' ');
                             }
                             label_names
                         }
