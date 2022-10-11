@@ -15,7 +15,7 @@ cp $TMP_DIR/.env.bak $TMP_DIR/.env
 vim $TMP_DIR/.env
 
 # check diff
-diff=`diff $TMP_DIR/.env.bak $TMP_DIR/.env`
+diff=`diff -u $TMP_DIR/.env.bak $TMP_DIR/.env`
 
 # echo diff, and check dialog
 if [ "$diff" != "" ]; then
