@@ -26,14 +26,28 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
 
     match issues {
         Ok(issues) => {
-            payload.push_str("@channel\n優先度が高いタスク一覧\n");
+            payload.push_str("@channel\nタスク一覧\n");
             if issues.is_empty() {
                 payload.push_str("なし");
             } else {
                 for issue in issues {
                     let issue_url = issue.url;
                     let issue_title = issue.title;
-                    payload.push_str(&format!("- <{}|{}>\n", issue_url, issue_title));
+                    let issue_labels = match issue.labels {
+                        Some(labels) => {
+                            let mut label_names = String::new();
+                            for label in labels {
+                                label_names.push_str(&label.name);
+                                label_names.push_str(" ");
+                            }
+                            label_names
+                        }
+                        None => String::from(""),
+                    };
+                    payload.push_str(&format!(
+                        "- <{}|{}>: {}\n",
+                        issue_url, issue_title, issue_labels
+                    ));
                 }
             }
         }

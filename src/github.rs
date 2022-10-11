@@ -7,7 +7,7 @@ pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
 
     let client = reqwest::Client::new();
     let res = client
-        .get("https://api.github.com/issues?filter=assigned&state=open&labels=Priority: High")
+        .get("https://api.github.com/issues?filter=assigned&state=open")
         .header("User-Agent", "reqwest")
         .header("Accept", "application/vnd.github+json")
         .header("Authorization", format!("Bearer {}", token))
