@@ -31,7 +31,7 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
                 payload.push_str("なし");
             } else {
                 for issue in issues {
-                    let issue_url = issue.url;
+                    let issue_url = issue.html_url;
                     let issue_title = issue.title;
                     let issue_labels = match issue.labels {
                         Some(labels) => {
