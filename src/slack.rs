@@ -49,8 +49,8 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
                         "- <{}|{}>(<{}|{}>): {}\n",
                         issue_url,
                         issue_title,
-                        issue_repository.name,
                         issue_repository.html_url,
+                        issue_repository.name,
                         issue_labels
                     ));
                 }
