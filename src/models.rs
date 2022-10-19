@@ -21,4 +21,5 @@ pub struct Issue {
     pub state: String,
     pub body: Option<String>,
     pub labels: Option<Vec<Label>>,
+    pub repository: Repository,
 }

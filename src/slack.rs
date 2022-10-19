@@ -26,7 +26,7 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
 
     match issues {
         Ok(issues) => {
-            payload.push_str("@channel\nタスク一覧\n");
+            payload.push_str("<!channel>\nタスク一覧\n");
             if issues.is_empty() {
                 payload.push_str("なし");
             } else {
@@ -44,9 +44,14 @@ pub fn create_payload_for_slack(issues: Result<Vec<Issue>, GetIssueError>) -> St
                         }
                         None => String::from(""),
                     };
+                    let issue_repository = issue.repository;
                     payload.push_str(&format!(
-                        "- <{}|{}>: {}\n",
-                        issue_url, issue_title, issue_labels
+                        "- <{}|{}>(<{}|{}>): {}\n",
+                        issue_url,
+                        issue_title,
+                        issue_repository.name,
+                        issue_repository.html_url,
+                        issue_labels
                     ));
                 }
             }
