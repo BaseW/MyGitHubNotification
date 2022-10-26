@@ -65,13 +65,13 @@ pub fn sort_issues(issues: Result<Vec<Issue>, GetIssueError>) -> Result<Vec<Issu
                         let mut is_priority_medium = false;
                         let mut is_priority_low = false;
                         for label in labels {
-                            if label.name == "Priority: high" {
+                            if label.name == "Priority: High" {
                                 is_priority_high = true;
                             }
-                            if label.name == "Priority: medium" {
+                            if label.name == "Priority: Medium" {
                                 is_priority_medium = true;
                             }
-                            if label.name == "Priority: low" {
+                            if label.name == "Priority: Low" {
                                 is_priority_low = true;
                             }
                         }
