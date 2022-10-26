@@ -48,3 +48,57 @@ pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     };
     Ok(issues)
 }
+
+pub fn sort_issues(issues: Result<Vec<Issue>, GetIssueError>) -> Result<Vec<Issue>, GetIssueError> {
+    let mut sorted_issues = Vec::new();
+    let mut priority_high_issues = Vec::new();
+    let mut priority_medium_issues = Vec::new();
+    let mut priority_low_issues = Vec::new();
+    let mut priority_none_issues = Vec::new();
+    match issues {
+        Ok(issues) => {
+            for issue in issues {
+                let issue_labels = &issue.labels;
+                match issue_labels {
+                    Some(labels) => {
+                        let mut is_priority_high = false;
+                        let mut is_priority_medium = false;
+                        let mut is_priority_low = false;
+                        for label in labels {
+                            if label.name == "Priority: high" {
+                                is_priority_high = true;
+                            }
+                            if label.name == "Priority: medium" {
+                                is_priority_medium = true;
+                            }
+                            if label.name == "Priority: low" {
+                                is_priority_low = true;
+                            }
+                        }
+                        if is_priority_high {
+                            priority_high_issues.push(issue);
+                        } else if is_priority_medium {
+                            priority_medium_issues.push(issue);
+                        } else if is_priority_low {
+                            priority_low_issues.push(issue);
+                        } else {
+                            priority_none_issues.push(issue);
+                        }
+                    }
+                    None => {
+                        priority_none_issues.push(issue);
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            println!("{}", e.message);
+            return Err(GetIssueError { message: e.message });
+        }
+    }
+    sorted_issues.append(&mut priority_high_issues);
+    sorted_issues.append(&mut priority_medium_issues);
+    sorted_issues.append(&mut priority_low_issues);
+    sorted_issues.append(&mut priority_none_issues);
+    Ok(sorted_issues)
+}
