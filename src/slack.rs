@@ -10,8 +10,14 @@ pub struct SlackMessageBlocks {
     blocks: Vec<SlackMessageBlock>,
 }
 
+impl Default for SlackMessageBlocks {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SlackMessageBlocks {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             blocks_type: "home".to_string(),
             blocks: vec![],
@@ -92,7 +98,7 @@ fn generate_text_with_header(header: &str, issues: &Vec<Issue>) -> String {
 }
 
 pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> SlackMessageBlocks {
-    let mut message_block = SlackMessageBlocks::new();
+    let mut message_block = SlackMessageBlocks::default();
 
     match issues {
         Ok(issues) => {
@@ -102,28 +108,28 @@ pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> 
 
             // add priority high issues
             let priority_high_issues = issues.priority_high_issues;
-            if priority_high_issues.len() > 0 {
+            if !priority_high_issues.is_empty() {
                 let text = generate_text_with_header("*優先度: 高*", &priority_high_issues);
                 message_block.add_text_block(text);
             }
 
             // add priority medium issues
             let priority_medium_issues = issues.priority_medium_issues;
-            if priority_medium_issues.len() > 0 {
+            if !priority_medium_issues.is_empty() {
                 let text = generate_text_with_header("*優先度: 中*", &priority_medium_issues);
                 message_block.add_text_block(text);
             }
 
             // add priority low issues
             let priority_low_issues = issues.priority_low_issues;
-            if priority_low_issues.len() > 0 {
+            if !priority_low_issues.is_empty() {
                 let text = generate_text_with_header("*優先度: 低*", &priority_low_issues);
                 message_block.add_text_block(text);
             }
 
             // add priority none issues
             let priority_none_issues = issues.priority_none_issues;
-            if priority_none_issues.len() > 0 {
+            if !priority_none_issues.is_empty() {
                 let text = generate_text_with_header("*優先度: なし*", &priority_none_issues);
                 message_block.add_text_block(text);
             }
