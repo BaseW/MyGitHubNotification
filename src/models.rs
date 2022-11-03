@@ -32,3 +32,17 @@ pub struct SortedIssues {
     pub priority_low_issues: Vec<Issue>,
     pub priority_none_issues: Vec<Issue>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SlackMessageBlock {
+    #[serde(rename = "type")]
+    pub(crate) block_type: String,
+    pub(crate) text: Option<SlackMessageBlockText>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SlackMessageBlockText {
+    #[serde(rename = "type")]
+    pub(crate) text_type: String,
+    pub(crate) text: String,
+}
