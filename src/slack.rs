@@ -1,7 +1,47 @@
 use crate::env::get_slack_webhook_url_from_env;
 use crate::errors::GetIssueError;
-use crate::models::{Issue, SortedIssues};
+use crate::models::{Issue, SlackMessageBlock, SlackMessageBlockText, SortedIssues};
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SlackMessageBlocks {
+    blocks: Vec<SlackMessageBlock>,
+}
+
+impl SlackMessageBlocks {
+    pub fn new() -> Self {
+        Self { blocks: vec![] }
+    }
+
+    fn add_block(&mut self, block: SlackMessageBlock) {
+        self.blocks.push(block);
+    }
+
+    pub fn add_header_block(&mut self, text: String) {
+        let block = SlackMessageBlock {
+            block_type: "header".to_string(),
+            text: Some(SlackMessageBlockText {
+                text_type: "plain_text".to_string(),
+                text,
+            }),
+            fields: None,
+        };
+        self.add_block(block);
+    }
+
+    pub fn add_text_block(&mut self, text: String) {
+        let block = SlackMessageBlock {
+            block_type: "section".to_string(),
+            text: Some(SlackMessageBlockText {
+                text_type: "mrkdwn".to_string(),
+                text,
+            }),
+            fields: None,
+        };
+        self.add_block(block);
+    }
+}
 
 pub async fn notify_by_slack(text: String) {
     let webhook_url = get_slack_webhook_url_from_env();
