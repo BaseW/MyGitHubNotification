@@ -24,3 +24,11 @@ pub struct Issue {
     pub repository: Repository,
     pub label_string: Option<String>,
 }
+
+#[derive(Debug)]
+pub struct SortedIssues {
+    pub priority_high_issues: Vec<Issue>,
+    pub priority_medium_issues: Vec<Issue>,
+    pub priority_low_issues: Vec<Issue>,
+    pub priority_none_issues: Vec<Issue>,
+}

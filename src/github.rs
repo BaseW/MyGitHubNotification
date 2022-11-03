@@ -1,6 +1,6 @@
 use crate::env::get_github_personal_access_token;
 use crate::errors::GetIssueError;
-use crate::models::Issue;
+use crate::models::{Issue, SortedIssues};
 
 pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     let token = get_github_personal_access_token();
@@ -49,8 +49,9 @@ pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
     Ok(issues)
 }
 
-pub fn sort_issues(issues: Result<Vec<Issue>, GetIssueError>) -> Result<Vec<Issue>, GetIssueError> {
-    let mut sorted_issues = Vec::new();
+pub fn sort_issues(
+    issues: Result<Vec<Issue>, GetIssueError>,
+) -> Result<SortedIssues, GetIssueError> {
     let mut priority_high_issues = Vec::new();
     let mut priority_medium_issues = Vec::new();
     let mut priority_low_issues = Vec::new();
@@ -96,9 +97,11 @@ pub fn sort_issues(issues: Result<Vec<Issue>, GetIssueError>) -> Result<Vec<Issu
             return Err(GetIssueError { message: e.message });
         }
     }
-    sorted_issues.append(&mut priority_high_issues);
-    sorted_issues.append(&mut priority_medium_issues);
-    sorted_issues.append(&mut priority_low_issues);
-    sorted_issues.append(&mut priority_none_issues);
+    let sorted_issues = SortedIssues {
+        priority_high_issues,
+        priority_medium_issues,
+        priority_low_issues,
+        priority_none_issues,
+    };
     Ok(sorted_issues)
 }
