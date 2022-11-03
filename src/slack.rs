@@ -2,16 +2,20 @@ use crate::env::get_slack_webhook_url_from_env;
 use crate::errors::GetIssueError;
 use crate::models::{Issue, SlackMessageBlock, SlackMessageBlockText, SortedIssues};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SlackMessageBlocks {
+    #[serde(rename = "type")]
+    blocks_type: String,
     blocks: Vec<SlackMessageBlock>,
 }
 
 impl SlackMessageBlocks {
     pub fn new() -> Self {
-        Self { blocks: vec![] }
+        Self {
+            blocks_type: "home".to_string(),
+            blocks: vec![],
+        }
     }
 
     fn add_block(&mut self, block: SlackMessageBlock) {
@@ -25,7 +29,6 @@ impl SlackMessageBlocks {
                 text_type: "plain_text".to_string(),
                 text,
             }),
-            fields: None,
         };
         self.add_block(block);
     }
@@ -37,23 +40,23 @@ impl SlackMessageBlocks {
                 text_type: "mrkdwn".to_string(),
                 text,
             }),
-            fields: None,
         };
         self.add_block(block);
     }
 }
 
-pub async fn notify_by_slack(text: String) {
+pub async fn notify_by_slack(message_blocks: SlackMessageBlocks) {
     let webhook_url = get_slack_webhook_url_from_env();
     let client = reqwest::Client::new();
-    let res = client
-        .post(webhook_url)
-        .json(&json!({ "text": text }))
-        .send()
-        .await;
+    let res = client.post(webhook_url).json(&message_blocks).send().await;
     match res {
-        Ok(_res) => {
-            println!("Notify by Slack OK");
+        Ok(res) => {
+            // if status code is 200, it means success
+            if res.status() == 200 {
+                println!("Notify by Slack OK");
+            } else {
+                println!("Notify by Slack Error: {}", res.status());
+            }
         }
         Err(err) => {
             println!("Notify by Slack Error: {}", err);
@@ -88,46 +91,47 @@ fn generate_text_with_header(header: &str, issues: &Vec<Issue>) -> String {
     text
 }
 
-pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> String {
-    let mut payload = String::new();
+pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> SlackMessageBlocks {
+    let mut message_block = SlackMessageBlocks::new();
 
     match issues {
         Ok(issues) => {
-            // add header
-            payload.push_str("<!channel>\nタスク一覧\n");
+            // add mention to the channel
+            message_block.add_text_block("<!channel>\n".to_string());
+            message_block.add_header_block("タスク一覧".to_string());
 
             // add priority high issues
             let priority_high_issues = issues.priority_high_issues;
             if priority_high_issues.len() > 0 {
-                let text = generate_text_with_header("優先度: 高", &priority_high_issues);
-                payload.push_str(&text);
+                let text = generate_text_with_header("*優先度: 高*", &priority_high_issues);
+                message_block.add_text_block(text);
             }
 
             // add priority medium issues
             let priority_medium_issues = issues.priority_medium_issues;
             if priority_medium_issues.len() > 0 {
-                let text = generate_text_with_header("優先度: 中", &priority_medium_issues);
-                payload.push_str(&text);
+                let text = generate_text_with_header("*優先度: 中*", &priority_medium_issues);
+                message_block.add_text_block(text);
             }
 
             // add priority low issues
             let priority_low_issues = issues.priority_low_issues;
             if priority_low_issues.len() > 0 {
-                let text = generate_text_with_header("優先度: 低", &priority_low_issues);
-                payload.push_str(&text);
+                let text = generate_text_with_header("*優先度: 低*", &priority_low_issues);
+                message_block.add_text_block(text);
             }
 
             // add priority none issues
             let priority_none_issues = issues.priority_none_issues;
             if priority_none_issues.len() > 0 {
-                let text = generate_text_with_header("優先度: なし", &priority_none_issues);
-                payload.push_str(&text);
+                let text = generate_text_with_header("*優先度: なし*", &priority_none_issues);
+                message_block.add_text_block(text);
             }
         }
         Err(e) => {
-            payload = e.message;
+            message_block.add_text_block(e.message);
         }
     }
 
-    payload
+    message_block
 }

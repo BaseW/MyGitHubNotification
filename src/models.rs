@@ -38,7 +38,6 @@ pub struct SlackMessageBlock {
     #[serde(rename = "type")]
     pub(crate) block_type: String,
     pub(crate) text: Option<SlackMessageBlockText>,
-    pub(crate) fields: Option<Vec<SlackMessageBlockField>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,11 +45,4 @@ pub struct SlackMessageBlockText {
     #[serde(rename = "type")]
     pub(crate) text_type: String,
     pub(crate) text: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SlackMessageBlockField {
-    #[serde(rename = "type")]
-    field_type: String,
-    text: String,
 }
