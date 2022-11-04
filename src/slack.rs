@@ -141,3 +141,38 @@ pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> 
 
     message_block
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_header_block() {
+        let mut slack_message_blocks = SlackMessageBlocks::default();
+        assert_eq!(slack_message_blocks.blocks.len(), 0);
+
+        // add header block
+        slack_message_blocks.add_header_block("test".to_string());
+        assert_eq!(slack_message_blocks.blocks.len(), 1);
+        assert_eq!(slack_message_blocks.blocks[0].block_type, "header");
+        assert_eq!(
+            slack_message_blocks.blocks[0].text.as_ref().unwrap().text,
+            "test"
+        );
+    }
+
+    #[test]
+    fn test_add_text_block() {
+        let mut slack_message_blocks = SlackMessageBlocks::default();
+        assert_eq!(slack_message_blocks.blocks.len(), 0);
+
+        // add text block
+        slack_message_blocks.add_text_block("test".to_string());
+        assert_eq!(slack_message_blocks.blocks.len(), 1);
+        assert_eq!(slack_message_blocks.blocks[0].block_type, "section");
+        assert_eq!(
+            slack_message_blocks.blocks[0].text.as_ref().unwrap().text,
+            "test"
+        );
+    }
+}
