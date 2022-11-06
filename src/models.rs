@@ -33,6 +33,17 @@ pub struct SortedIssues {
     pub priority_none_issues: Vec<Issue>,
 }
 
+impl SortedIssues {
+    pub fn default() -> Self {
+        SortedIssues {
+            priority_high_issues: Vec::new(),
+            priority_medium_issues: Vec::new(),
+            priority_low_issues: Vec::new(),
+            priority_none_issues: Vec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SlackMessageBlock {
     #[serde(rename = "type")]
