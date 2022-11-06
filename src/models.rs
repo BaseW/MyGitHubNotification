@@ -1,19 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Label {
     pub id: i64,
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Repository {
     pub id: i64,
     pub name: String,
     pub html_url: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Issue {
     pub id: i64,
     pub title: String,
@@ -51,7 +51,7 @@ pub struct SlackMessageBlock {
     pub(crate) text: Option<SlackMessageBlockText>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SlackMessageBlockText {
     #[serde(rename = "type")]
     pub(crate) text_type: String,
