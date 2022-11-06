@@ -1,4 +1,3 @@
-use crate::env::get_slack_webhook_url_from_env;
 use crate::errors::GetIssueError;
 use crate::models::{Issue, SlackMessageBlock, SlackMessageBlockText, SortedIssues};
 use serde::{Deserialize, Serialize};
@@ -51,8 +50,7 @@ impl SlackMessageBlocks {
     }
 }
 
-pub async fn notify_by_slack(message_blocks: SlackMessageBlocks) {
-    let webhook_url = get_slack_webhook_url_from_env();
+pub async fn notify_by_slack(webhook_url: String, message_blocks: SlackMessageBlocks) {
     let client = reqwest::Client::new();
     let res = client.post(webhook_url).json(&message_blocks).send().await;
     match res {
@@ -75,26 +73,31 @@ fn generate_text_with_header(header: &str, issues: &Vec<Issue>) -> String {
     text.push_str(format!("{}\n", header).as_str());
 
     for issue in issues {
-        let issue_url = &issue.html_url;
-        let issue_title = &issue.title;
-        let issue_labels = match &issue.labels {
-            Some(labels) => {
-                let mut label_names = String::new();
-                for label in labels {
-                    label_names.push_str(&label.name);
-                    label_names.push(' ');
-                }
-                label_names
-            }
-            None => String::from(""),
-        };
-        let issue_repository = &issue.repository;
-        text.push_str(&format!(
-            "- <{}|{}>(<{}|{}>): {}\n",
-            issue_url, issue_title, issue_repository.html_url, issue_repository.name, issue_labels
-        ));
+        let text_for_issue = generate_text_for_issue(issue);
+        text.push_str(&text_for_issue);
     }
     text
+}
+
+fn generate_text_for_issue(issue: &Issue) -> String {
+    let issue_url = &issue.html_url;
+    let issue_title = &issue.title;
+    let issue_labels = match &issue.labels {
+        Some(labels) => {
+            let mut label_names = String::new();
+            for label in labels {
+                label_names.push_str(&label.name);
+                label_names.push(' ');
+            }
+            label_names
+        }
+        None => String::from(""),
+    };
+    let issue_repository = &issue.repository;
+    format!(
+        "- <{}|{}>(<{}|{}>): {}\n",
+        issue_url, issue_title, issue_repository.html_url, issue_repository.name, issue_labels
+    )
 }
 
 pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> SlackMessageBlocks {
@@ -140,4 +143,157 @@ pub fn create_payload_for_slack(issues: Result<SortedIssues, GetIssueError>) -> 
     }
 
     message_block
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_header_block() {
+        let mut slack_message_blocks = SlackMessageBlocks::default();
+        assert_eq!(slack_message_blocks.blocks.len(), 0);
+
+        // add header block
+        slack_message_blocks.add_header_block("test".to_string());
+        assert_eq!(slack_message_blocks.blocks.len(), 1);
+        assert_eq!(slack_message_blocks.blocks[0].block_type, "header");
+        assert_eq!(
+            slack_message_blocks.blocks[0].text.as_ref().unwrap().text,
+            "test"
+        );
+    }
+
+    #[test]
+    fn test_add_text_block() {
+        let mut slack_message_blocks = SlackMessageBlocks::default();
+        assert_eq!(slack_message_blocks.blocks.len(), 0);
+
+        // add text block
+        slack_message_blocks.add_text_block("test".to_string());
+        assert_eq!(slack_message_blocks.blocks.len(), 1);
+        assert_eq!(slack_message_blocks.blocks[0].block_type, "section");
+        assert_eq!(
+            slack_message_blocks.blocks[0].text.as_ref().unwrap().text,
+            "test"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_notify_by_slack() {
+        use httpmock::prelude::*;
+
+        let server = MockServer::start();
+        let mock = server.mock(|when, then| {
+            when.method("POST")
+                .path("/")
+                .header("content-type", "application/json");
+            then.status(200);
+        });
+
+        let mock_webhook_url = format!("http://{}", server.address());
+        let mock_message_blocks = SlackMessageBlocks::default();
+
+        notify_by_slack(mock_webhook_url, mock_message_blocks).await;
+        mock.assert();
+    }
+
+    #[test]
+    fn test_generate_text_with_header() {
+        use super::super::models::{Label, Repository};
+
+        let mut issues = Vec::new();
+        issues.push(Issue {
+            html_url: "issue_html_url".to_string(),
+            title: "title".to_string(),
+            labels: Some(vec![Label {
+                name: "label1".to_string(),
+                id: 0,
+            }]),
+            repository: Repository {
+                html_url: "repo_html_url".to_string(),
+                name: "name".to_string(),
+                id: 0,
+            },
+            body: None,
+            id: 0,
+            label_string: None,
+            state: "open".to_string(),
+        });
+        let text = generate_text_with_header("header", &issues);
+        assert_eq!(
+            text,
+            "header".to_string()
+                + "\n"
+                + "- <issue_html_url|title>(<repo_html_url|name>): label1 \n"
+        );
+    }
+
+    #[test]
+    fn test_generate_text_for_issue() {
+        use super::super::models::{Label, Repository};
+
+        let issue = Issue {
+            html_url: "issue_html_url".to_string(),
+            title: "title".to_string(),
+            labels: Some(vec![Label {
+                name: "label1".to_string(),
+                id: 0,
+            }]),
+            repository: Repository {
+                html_url: "repo_html_url".to_string(),
+                name: "name".to_string(),
+                id: 0,
+            },
+            body: None,
+            id: 0,
+            label_string: None,
+            state: "open".to_string(),
+        };
+        let text = generate_text_for_issue(&issue);
+        assert_eq!(
+            text,
+            "- <issue_html_url|title>(<repo_html_url|name>): label1 \n"
+        );
+    }
+
+    #[test]
+    fn test_create_payload_for_slack() {
+        use super::super::models::{Label, Repository};
+
+        let mut issues = SortedIssues::default();
+        issues.priority_high_issues.push(Issue {
+            html_url: "issue_html_url".to_string(),
+            title: "title".to_string(),
+            labels: Some(vec![Label {
+                name: "label1".to_string(),
+                id: 0,
+            }]),
+            repository: Repository {
+                html_url: "repo_html_url".to_string(),
+                name: "name".to_string(),
+                id: 0,
+            },
+            body: None,
+            id: 0,
+            label_string: None,
+            state: "open".to_string(),
+        });
+        let payload = create_payload_for_slack(Ok(issues));
+        assert_eq!(payload.blocks.len(), 3);
+        assert_eq!(payload.blocks[0].block_type, "section");
+        assert_eq!(
+            payload.blocks[0].text.as_ref().unwrap().text,
+            "<!channel>\n"
+        );
+        assert_eq!(payload.blocks[1].block_type, "header");
+        assert_eq!(payload.blocks[1].text.as_ref().unwrap().text, "タスク一覧");
+        assert_eq!(payload.blocks[2].block_type, "section");
+        assert_eq!(
+            payload.blocks[2].text.as_ref().unwrap().text,
+            "*優先度: 高*".to_string()
+                + "\n"
+                + "- <issue_html_url|title>(<repo_html_url|name>): label1 \n"
+        );
+    }
 }

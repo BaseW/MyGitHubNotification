@@ -1,13 +1,16 @@
-use crate::env::get_github_personal_access_token;
 use crate::errors::GetIssueError;
 use crate::models::{Issue, SortedIssues};
 
-pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
-    let token = get_github_personal_access_token();
-
+pub async fn get_my_issues(
+    github_api_addr: String,
+    token: String,
+) -> Result<Vec<Issue>, GetIssueError> {
     let client = reqwest::Client::new();
     let res = client
-        .get("https://api.github.com/issues?filter=assigned&state=open")
+        .get(format!(
+            "{}/issues?filter=assigned&state=open",
+            github_api_addr
+        ))
         .header("User-Agent", "reqwest")
         .header("Accept", "application/vnd.github+json")
         .header("Authorization", format!("Bearer {}", token))
@@ -104,4 +107,80 @@ pub fn sort_issues(
         priority_none_issues,
     };
     Ok(sorted_issues)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_get_my_issues() {
+        use super::super::models::{Issue, Repository};
+        use httpmock::prelude::*;
+
+        let mock_repo = Repository {
+            id: 0,
+            name: "test_repo".to_string(),
+            html_url: "repo_url".to_string(),
+        };
+        let mock_issue = Issue {
+            id: 1,
+            title: "test".to_string(),
+            body: Some("test".to_string()),
+            labels: None,
+            state: "open".to_string(),
+            repository: mock_repo,
+            html_url: "html_url".to_string(),
+            label_string: None,
+        };
+        let mock_issues = vec![mock_issue];
+        let token = String::from("token");
+
+        let server = MockServer::start();
+        let mock = server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues")
+                .header("User-Agent", "reqwest")
+                .header("Accept", "application/vnd.github+json")
+                .header("Authorization", format!("Bearer {}", token));
+            then.status(200)
+                .header("content-type", "application/json")
+                .json_body_obj(&mock_issues);
+        });
+        let mock_api_addr = format!("http://{}", server.address());
+
+        let issues = get_my_issues(mock_api_addr, token).await;
+        mock.assert();
+        assert!(issues.is_ok());
+        assert_eq!(issues.unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_sort_issues() {
+        use super::super::models::{Issue, Repository};
+        let mock_repo = Repository {
+            id: 0,
+            name: "test_repo".to_string(),
+            html_url: "repo_url".to_string(),
+        };
+        let mock_issue = Issue {
+            id: 1,
+            title: "test".to_string(),
+            body: Some("test".to_string()),
+            labels: None,
+            state: "open".to_string(),
+            repository: mock_repo,
+            html_url: "html_url".to_string(),
+            label_string: None,
+        };
+        let mock_issues = vec![mock_issue];
+        let issues = Ok(mock_issues);
+        let sorted_issues = sort_issues(issues);
+        assert!(sorted_issues.is_ok());
+        let sorted_issues = sorted_issues.unwrap();
+        assert_eq!(sorted_issues.priority_high_issues.len(), 0);
+        assert_eq!(sorted_issues.priority_medium_issues.len(), 0);
+        assert_eq!(sorted_issues.priority_low_issues.len(), 0);
+        assert_eq!(sorted_issues.priority_none_issues.len(), 1);
+    }
 }
