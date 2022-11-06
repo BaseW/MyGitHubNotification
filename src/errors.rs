@@ -13,3 +13,16 @@ impl std::fmt::Display for GetIssueError {
 }
 
 impl error::Error for GetIssueError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_issue_error_1() {
+        let error = GetIssueError {
+            message: "test error".to_string(),
+        };
+        assert_eq!(error.message, "test error");
+    }
+}
