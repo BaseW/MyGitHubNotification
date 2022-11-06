@@ -179,9 +179,23 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_notify_by_slack() {
-        // TODO: implement
+    #[tokio::test]
+    async fn test_notify_by_slack() {
+        use httpmock::prelude::*;
+
+        let server = MockServer::start();
+        let mock = server.mock(|when, then| {
+            when.method("POST")
+                .path("/")
+                .header("content-type", "application/json");
+            then.status(200);
+        });
+
+        let mock_webhook_url = format!("http://{}", server.address());
+        let mock_message_blocks = SlackMessageBlocks::default();
+
+        notify_by_slack(mock_webhook_url, mock_message_blocks).await;
+        mock.assert();
     }
 
     #[test]
