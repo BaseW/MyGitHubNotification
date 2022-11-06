@@ -1,10 +1,7 @@
-use crate::env::get_github_personal_access_token;
 use crate::errors::GetIssueError;
 use crate::models::{Issue, SortedIssues};
 
-pub async fn get_my_issues() -> Result<Vec<Issue>, GetIssueError> {
-    let token = get_github_personal_access_token();
-
+pub async fn get_my_issues(token: String) -> Result<Vec<Issue>, GetIssueError> {
     let client = reqwest::Client::new();
     let res = client
         .get("https://api.github.com/issues?filter=assigned&state=open")

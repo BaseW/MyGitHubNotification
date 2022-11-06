@@ -1,4 +1,3 @@
-use crate::env::get_slack_webhook_url_from_env;
 use crate::errors::GetIssueError;
 use crate::models::{Issue, SlackMessageBlock, SlackMessageBlockText, SortedIssues};
 use serde::{Deserialize, Serialize};
@@ -51,8 +50,7 @@ impl SlackMessageBlocks {
     }
 }
 
-pub async fn notify_by_slack(message_blocks: SlackMessageBlocks) {
-    let webhook_url = get_slack_webhook_url_from_env();
+pub async fn notify_by_slack(webhook_url: String, message_blocks: SlackMessageBlocks) {
     let client = reqwest::Client::new();
     let res = client.post(webhook_url).json(&message_blocks).send().await;
     match res {
