@@ -25,23 +25,12 @@ pub struct Issue {
     pub label_string: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SortedIssues {
     pub priority_high_issues: Vec<Issue>,
     pub priority_medium_issues: Vec<Issue>,
     pub priority_low_issues: Vec<Issue>,
     pub priority_none_issues: Vec<Issue>,
-}
-
-impl SortedIssues {
-    pub fn default() -> Self {
-        SortedIssues {
-            priority_high_issues: Vec::new(),
-            priority_medium_issues: Vec::new(),
-            priority_low_issues: Vec::new(),
-            priority_none_issues: Vec::new(),
-        }
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -114,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_sorted_issues_1() {
-        let sorted_issues = SortedIssues::default();
+        let sorted_issues: SortedIssues = Default::default();
         assert_eq!(sorted_issues.priority_high_issues.len(), 0);
         assert_eq!(sorted_issues.priority_medium_issues.len(), 0);
         assert_eq!(sorted_issues.priority_low_issues.len(), 0);

@@ -63,14 +63,14 @@ pub async fn notify_by_slack(webhook_url: String, message_blocks: SlackMessageBl
             }
         }
         Err(err) => {
-            println!("Notify by Slack Error: {}", err);
+            println!("Notify by Slack Error: {err}");
         }
     }
 }
 
 fn generate_text_with_header(header: &str, issues: &Vec<Issue>) -> String {
     let mut text = String::new();
-    text.push_str(format!("{}\n", header).as_str());
+    text.push_str(format!("{header}\n").as_str());
 
     for issue in issues {
         let text_for_issue = generate_text_for_issue(issue);
@@ -202,8 +202,7 @@ mod tests {
     fn test_generate_text_with_header() {
         use super::super::models::{Label, Repository};
 
-        let mut issues = Vec::new();
-        issues.push(Issue {
+        let issues = vec![Issue {
             html_url: "issue_html_url".to_string(),
             title: "title".to_string(),
             labels: Some(vec![Label {
@@ -219,7 +218,7 @@ mod tests {
             id: 0,
             label_string: None,
             state: "open".to_string(),
-        });
+        }];
         let text = generate_text_with_header("header", &issues);
         assert_eq!(
             text,

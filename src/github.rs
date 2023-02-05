@@ -6,14 +6,12 @@ pub async fn get_my_issues(
     token: String,
 ) -> Result<Vec<Issue>, GetIssueError> {
     let client = reqwest::Client::new();
+    let url = format!("{github_api_addr}/issues?filter=assigned&state=open");
     let res = client
-        .get(format!(
-            "{}/issues?filter=assigned&state=open",
-            github_api_addr
-        ))
+        .get(url)
         .header("User-Agent", "reqwest")
         .header("Accept", "application/vnd.github+json")
-        .header("Authorization", format!("Bearer {}", token))
+        .header("Authorization", format!("Bearer {token}"))
         .send()
         .await;
     // if res is Ok, print "OK", otherwise print "Error"
@@ -22,7 +20,7 @@ pub async fn get_my_issues(
             // if status is not 200, return error
             if res.status() != 200 {
                 let error_message = format!("status code is not 200: {}", res.status());
-                println!("{}", error_message);
+                println!("{error_message}");
                 return Err(GetIssueError {
                     message: error_message,
                 });
@@ -33,8 +31,8 @@ pub async fn get_my_issues(
             match parsed_issues {
                 Ok(issues) => issues,
                 Err(e) => {
-                    let error_message = format!("Parse Issues Error: {}", e);
-                    println!("{}", error_message);
+                    let error_message = format!("Parse Issues Error: {e}");
+                    println!("{error_message}");
                     return Err(GetIssueError {
                         message: error_message,
                     });
@@ -42,8 +40,8 @@ pub async fn get_my_issues(
             }
         }
         Err(err) => {
-            let error_message = format!("Fetch Issues Error: {}", err);
-            println!("{}", error_message);
+            let error_message = format!("Fetch Issues Error: {err}");
+            println!("{error_message}");
             return Err(GetIssueError {
                 message: error_message,
             });
