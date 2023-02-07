@@ -2,18 +2,12 @@ use my_github_notification::env::{
     get_github_personal_access_token, get_slack_webhook_url_from_env,
 };
 use my_github_notification::github::{get_my_issues, sort_issues};
+use my_github_notification::sentry::initialize_sentry;
 use my_github_notification::slack::{create_payload_for_slack, notify_by_slack};
 
 #[tokio::main]
 async fn main() {
-    let sentry_dsn = std::env::var("SENTRY_DSN").expect("SENTRY_DSN is not set");
-    let _guard = sentry::init((
-        sentry_dsn,
-        sentry::ClientOptions {
-            release: sentry::release_name!(),
-            ..Default::default()
-        },
-    ));
+    let _guard = initialize_sentry();
 
     let token = get_github_personal_access_token();
     let webhook_url = get_slack_webhook_url_from_env();
