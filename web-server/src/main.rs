@@ -1,17 +1,13 @@
-//! Run with
-//!
-//! ```not_rust
-//! cd examples && cargo run -p example-hello-world
-//! ```
-
-use axum::{response::Html, routing::get, Router};
+use axum::{response::{Html}, routing::get, Router};
 use std::net::SocketAddr;
 use github_notification::{sentry::initialize_sentry, github::{get_my_issues, sort_issues}, slack::{create_payload_for_slack, notify_by_slack}, env::{get_github_personal_access_token, get_slack_webhook_url_from_env}};
 
 #[tokio::main]
 async fn main() {
     // build our application with a route
-    let app = Router::new().route("/", get(handler));
+    let app = Router::new()
+      .route("/", get(handler))
+      .route("/get-issues", get(get_issues_handler));
 
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -23,6 +19,12 @@ async fn main() {
 }
 
 async fn handler() -> Html<&'static str> {
+    Html("<h1>Hello, World!</h1>")
+}
+
+// receive request from slack
+// respond with text
+async fn get_issues_handler() -> String {
     let _guard = initialize_sentry();
 
     let token = get_github_personal_access_token();
@@ -35,5 +37,5 @@ async fn handler() -> Html<&'static str> {
 
     // notify by slack
     notify_by_slack(webhook_url, payload).await;
-    Html("<h1>Hello, World!</h1>")
+    String::from("ok")
 }
