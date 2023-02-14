@@ -1,9 +1,9 @@
-use my_github_notification::env::{
+use github_notification::env::{
     get_github_personal_access_token, get_slack_webhook_url_from_env,
 };
-use my_github_notification::github::{get_my_issues, sort_issues};
-use my_github_notification::sentry::initialize_sentry;
-use my_github_notification::slack::{create_payload_for_slack, notify_by_slack};
+use github_notification::github::{get_my_issues, sort_issues};
+use github_notification::sentry::initialize_sentry;
+use github_notification::slack::{create_payload_for_slack, notify_by_slack};
 
 #[tokio::main]
 async fn main() {
