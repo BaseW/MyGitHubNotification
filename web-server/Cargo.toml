@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.6"
+github-notification = { version = "0.1.0", path = "../github-notification" }
 tokio = { version = "1.25.0", features = ["full"] }
