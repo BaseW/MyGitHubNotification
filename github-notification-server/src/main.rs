@@ -1,13 +1,18 @@
-use axum::{response::{Html}, routing::get, Router};
+use axum::{response::Html, routing::get, Router};
+use github_notification::{
+    env::{get_github_personal_access_token, get_slack_webhook_url_from_env},
+    github::{get_my_issues, sort_issues},
+    sentry::initialize_sentry,
+    slack::{create_payload_for_slack, notify_by_slack},
+};
 use std::net::SocketAddr;
-use github_notification::{sentry::initialize_sentry, github::{get_my_issues, sort_issues}, slack::{create_payload_for_slack, notify_by_slack}, env::{get_github_personal_access_token, get_slack_webhook_url_from_env}};
 
 #[tokio::main]
 async fn main() {
     // build our application with a route
     let app = Router::new()
-      .route("/", get(handler))
-      .route("/get-issues", get(get_issues_handler));
+        .route("/", get(handler))
+        .route("/get-issues", get(get_issues_handler));
 
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

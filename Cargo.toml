@@ -2,5 +2,5 @@
 
 members = [
     "github-notification",
-    "web-server"
+    "github-notification-server"
 ]

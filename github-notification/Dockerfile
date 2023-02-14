@@ -16,6 +16,6 @@ FROM debian:bullseye-slim AS runtime-stage
 RUN apt update
 RUN apt install -y ca-certificates
 
-COPY --from=build-stage /app/target/release/my-github-notification /app/my-github-notification
+COPY --from=build-stage /app/target/release/github-notification /app/github-notification
 
-ENTRYPOINT ["/app/my-github-notification"]
+ENTRYPOINT ["/app/github-notification"]
