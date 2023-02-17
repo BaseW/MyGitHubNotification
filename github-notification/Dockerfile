@@ -1,5 +1,5 @@
 # build stage
-FROM rust:1.64.0-slim-bullseye AS build-stage
+FROM rust:1.67.1-slim-bullseye AS build-stage
 
 RUN apt update
 RUN apt install -y libssl-dev pkg-config
