@@ -1,72 +1,6 @@
+use super::message::SlackMessageBlocks;
 use crate::errors::GetIssueError;
-use crate::models::{Issue, SlackMessageBlock, SlackMessageBlockText, SortedIssues};
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SlackMessageBlocks {
-    #[serde(rename = "type")]
-    blocks_type: String,
-    blocks: Vec<SlackMessageBlock>,
-}
-
-impl Default for SlackMessageBlocks {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl SlackMessageBlocks {
-    fn new() -> Self {
-        Self {
-            blocks_type: "home".to_string(),
-            blocks: vec![],
-        }
-    }
-
-    fn add_block(&mut self, block: SlackMessageBlock) {
-        self.blocks.push(block);
-    }
-
-    pub fn add_header_block(&mut self, text: String) {
-        let block = SlackMessageBlock {
-            block_type: "header".to_string(),
-            text: Some(SlackMessageBlockText {
-                text_type: "plain_text".to_string(),
-                text,
-            }),
-        };
-        self.add_block(block);
-    }
-
-    pub fn add_text_block(&mut self, text: String) {
-        let block = SlackMessageBlock {
-            block_type: "section".to_string(),
-            text: Some(SlackMessageBlockText {
-                text_type: "mrkdwn".to_string(),
-                text,
-            }),
-        };
-        self.add_block(block);
-    }
-}
-
-pub async fn notify_by_slack(webhook_url: String, message_blocks: SlackMessageBlocks) {
-    let client = reqwest::Client::new();
-    let res = client.post(webhook_url).json(&message_blocks).send().await;
-    match res {
-        Ok(res) => {
-            // if status code is 200, it means success
-            if res.status() == 200 {
-                println!("Notify by Slack OK");
-            } else {
-                println!("Notify by Slack Error: {}", res.status());
-            }
-        }
-        Err(err) => {
-            println!("Notify by Slack Error: {err}");
-        }
-    }
-}
+use crate::models::{Issue, SortedIssues};
 
 fn generate_text_with_header(header: &str, issues: &Vec<Issue>) -> String {
     let mut text = String::new();
@@ -179,28 +113,9 @@ mod tests {
         );
     }
 
-    #[tokio::test]
-    async fn test_notify_by_slack() {
-        use httpmock::prelude::*;
-
-        let server = MockServer::start();
-        let mock = server.mock(|when, then| {
-            when.method("POST")
-                .path("/")
-                .header("content-type", "application/json");
-            then.status(200);
-        });
-
-        let mock_webhook_url = format!("http://{}", server.address());
-        let mock_message_blocks = SlackMessageBlocks::default();
-
-        notify_by_slack(mock_webhook_url, mock_message_blocks).await;
-        mock.assert();
-    }
-
     #[test]
     fn test_generate_text_with_header() {
-        use super::super::models::{Label, Repository};
+        use crate::models::{Label, Repository};
 
         let issues = vec![Issue {
             html_url: "issue_html_url".to_string(),
@@ -230,7 +145,7 @@ mod tests {
 
     #[test]
     fn test_generate_text_for_issue() {
-        use super::super::models::{Label, Repository};
+        use crate::models::{Label, Repository};
 
         let issue = Issue {
             html_url: "issue_html_url".to_string(),
@@ -258,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_create_payload_for_slack() {
-        use super::super::models::{Label, Repository};
+        use crate::models::{Label, Repository};
 
         let mut issues = SortedIssues::default();
         issues.priority_high_issues.push(Issue {

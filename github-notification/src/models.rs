@@ -33,20 +33,6 @@ pub struct SortedIssues {
     pub priority_none_issues: Vec<Issue>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SlackMessageBlock {
-    #[serde(rename = "type")]
-    pub(crate) block_type: String,
-    pub(crate) text: Option<SlackMessageBlockText>,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct SlackMessageBlockText {
-    #[serde(rename = "type")]
-    pub(crate) text_type: String,
-    pub(crate) text: String,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -108,25 +94,5 @@ mod tests {
         assert_eq!(sorted_issues.priority_medium_issues.len(), 0);
         assert_eq!(sorted_issues.priority_low_issues.len(), 0);
         assert_eq!(sorted_issues.priority_none_issues.len(), 0);
-    }
-
-    #[test]
-    fn test_slack_message_block_1() {
-        let slack_message_block = SlackMessageBlock {
-            block_type: "test".to_string(),
-            text: None,
-        };
-        assert_eq!(slack_message_block.block_type, "test");
-        assert_eq!(slack_message_block.text, None);
-    }
-
-    #[test]
-    fn test_slack_message_block_text_1() {
-        let slack_message_block_text = SlackMessageBlockText {
-            text_type: "test".to_string(),
-            text: "test".to_string(),
-        };
-        assert_eq!(slack_message_block_text.text_type, "test");
-        assert_eq!(slack_message_block_text.text, "test");
     }
 }
