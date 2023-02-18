@@ -2,6 +2,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use github_notification::sentry::initialize_sentry;
 use github_notification_server::handlers::{
     health_check::health_check_handler, notification::create_notification_handler,
 };
@@ -9,6 +10,7 @@ use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
+    let _guard = initialize_sentry();
     // build our application with a route
     let app = Router::new()
         .route("/", get(health_check_handler))

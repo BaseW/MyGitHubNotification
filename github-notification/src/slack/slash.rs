@@ -1,6 +1,7 @@
 use crate::env::get_slack_slash_command_token;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SlashCommandPayload {
     pub token: String,
     pub team_id: String,
