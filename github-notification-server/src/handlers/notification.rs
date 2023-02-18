@@ -1,12 +1,13 @@
-use github_notification::env::{get_github_personal_access_token, get_slack_webhook_url_from_env};
-use github_notification::github::{get_my_issues, sort_issues};
-use github_notification::sentry::initialize_sentry;
-use github_notification::slack::{
-    notification::notify_by_slack, payload::create_payload_for_slack,
+use github_notification::{
+    env::{get_github_personal_access_token, get_slack_webhook_url_from_env},
+    github::{get_my_issues, sort_issues},
+    sentry::initialize_sentry,
+    slack::{notification::notify_by_slack, payload::create_payload_for_slack},
 };
 
-#[tokio::main]
-async fn main() {
+// receive request from slack
+// respond with text
+pub async fn create_notification_handler() -> String {
     let _guard = initialize_sentry();
 
     let token = get_github_personal_access_token();
@@ -19,4 +20,5 @@ async fn main() {
 
     // notify by slack
     notify_by_slack(webhook_url, payload).await;
+    String::from("ok")
 }
