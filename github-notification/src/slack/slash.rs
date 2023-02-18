@@ -27,6 +27,7 @@ const AVAILABLE_TEXT: [&str; 3] = ["help", "health-check", "create-notification"
 pub fn validate_slash_command_payload(
     payload: &SlashCommandPayload,
 ) -> Result<SlackCommandRequest, String> {
+    println!("payload: {:?}", payload);
     if payload.token != get_slack_slash_command_token() {
         return Err("Invalid token".to_string());
     }
