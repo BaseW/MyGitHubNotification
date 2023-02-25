@@ -11,4 +11,5 @@ axum-macros = "0.3.4"
 github-notification = { version = "0.1.0", path = "../github-notification" }
 tokio = { version = "1.25.0", features = ["full"] }
 tower = "0.4.13"
+tower-http = { version = "0.4.0", features = ["trace"] }
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
