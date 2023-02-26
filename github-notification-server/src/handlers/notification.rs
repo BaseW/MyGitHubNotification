@@ -1,14 +1,30 @@
+use axum::{http::StatusCode, response::IntoResponse};
+use axum_macros::debug_handler;
 use github_notification::{
     env::{get_github_personal_access_token, get_slack_webhook_url_from_env},
     github::{get_my_issues, sort_issues},
-    sentry::initialize_sentry,
-    slack::{notification::notify_by_slack, payload::create_payload_for_slack},
+    slack::{
+        notification::notify_by_slack,
+        payload::create_payload_for_slack,
+        slash::{validate_slash_command_payload, SlashCommandPayload},
+    },
 };
 
 // receive request from slack
 // respond with text
-pub async fn create_notification_handler() -> String {
-    let _guard = initialize_sentry();
+#[debug_handler]
+pub async fn create_notification_handler(
+    form: axum::extract::Form<SlashCommandPayload>,
+) -> impl IntoResponse {
+    // check token, command, text
+    match validate_slash_command_payload(&form) {
+        Ok(req) => {
+            println!("req: {:?}", req);
+        }
+        Err(e) => {
+            return (StatusCode::BAD_REQUEST, e);
+        }
+    }
 
     let token = get_github_personal_access_token();
     let webhook_url = get_slack_webhook_url_from_env();
@@ -20,5 +36,5 @@ pub async fn create_notification_handler() -> String {
 
     // notify by slack
     notify_by_slack(webhook_url, payload).await;
-    String::from("ok")
+    (StatusCode::OK, "ok".to_string())
 }
