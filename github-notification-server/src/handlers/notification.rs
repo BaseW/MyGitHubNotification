@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{http::StatusCode, response::IntoResponse};
 use axum_macros::debug_handler;
 use github_notification::{
     env::{get_github_personal_access_token, get_slack_webhook_url_from_env},
@@ -14,10 +14,10 @@ use github_notification::{
 // respond with text
 #[debug_handler]
 pub async fn create_notification_handler(
-    Json(input): Json<SlashCommandPayload>,
+    form: axum::extract::Form<SlashCommandPayload>,
 ) -> impl IntoResponse {
     // check token, command, text
-    match validate_slash_command_payload(&input) {
+    match validate_slash_command_payload(&form) {
         Ok(req) => {
             println!("req: {:?}", req);
         }
