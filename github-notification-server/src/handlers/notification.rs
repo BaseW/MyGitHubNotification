@@ -25,6 +25,16 @@ pub async fn create_notification_handler(
             return (StatusCode::BAD_REQUEST, e);
         }
     }
+    // branch by command
+    // if command is "help", print help message
+    if req.command == "help".to_string() {
+      return (StatusCode::OK, "Please provide command like \"health-check\", \"create-notification\"")
+    }
+    // if command is "health-check", print ok
+    if req.command == "health-check".to_string() {
+      return (StatusCode::OK, "Health Check OK")
+    }
+
 
     let token = get_github_personal_access_token();
     let webhook_url = get_slack_webhook_url_from_env();
