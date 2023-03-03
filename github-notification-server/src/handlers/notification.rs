@@ -17,24 +17,27 @@ pub async fn create_notification_handler(
     form: axum::extract::Form<SlashCommandPayload>,
 ) -> impl IntoResponse {
     // check token, command, text
-    match validate_slash_command_payload(&form) {
+    let req = match validate_slash_command_payload(&form) {
         Ok(req) => {
             println!("req: {:?}", req);
+            req
         }
         Err(e) => {
             return (StatusCode::BAD_REQUEST, e);
         }
-    }
+    };
     // branch by command
     // if command is "help", print help message
     if req.command == "help".to_string() {
-      return (StatusCode::OK, "Please provide command like \"health-check\", \"create-notification\"")
+        return (
+            StatusCode::OK,
+            "Please provide command like \"health-check\", \"create-notification\"".to_string(),
+        );
     }
     // if command is "health-check", print ok
     if req.command == "health-check".to_string() {
-      return (StatusCode::OK, "Health Check OK")
+        return (StatusCode::OK, "Health Check OK".to_string());
     }
-
 
     let token = get_github_personal_access_token();
     let webhook_url = get_slack_webhook_url_from_env();
