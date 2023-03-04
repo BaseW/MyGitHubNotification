@@ -28,15 +28,15 @@ pub async fn create_notification_handler(
     };
     // branch by command
     // if command is "help", print help message
-    if req.command == "help".to_string() {
-        return (
-            StatusCode::OK,
-            "Please provide command like \"health-check\", \"create-notification\"".to_string(),
-        );
+    if req.text.as_str() == "help" {
+        let message =
+            "Please provide command like \"health-check\", \"create-notification\"".to_string();
+        return (StatusCode::OK, message);
     }
     // if command is "health-check", print ok
-    if req.command == "health-check".to_string() {
-        return (StatusCode::OK, "Health Check OK".to_string());
+    if req.text.as_str() == "health-check" {
+        let message = "Health Check OK".to_string();
+        return (StatusCode::OK, message);
     }
 
     let token = get_github_personal_access_token();
