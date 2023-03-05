@@ -17,13 +17,26 @@ pub async fn create_notification_handler(
     form: axum::extract::Form<SlashCommandPayload>,
 ) -> impl IntoResponse {
     // check token, command, text
-    match validate_slash_command_payload(&form) {
+    let req = match validate_slash_command_payload(&form) {
         Ok(req) => {
             println!("req: {:?}", req);
+            req
         }
         Err(e) => {
             return (StatusCode::BAD_REQUEST, e);
         }
+    };
+    // branch by command
+    // if command is "help", print help message
+    if req.text.as_str() == "help" {
+        let message =
+            "Please provide command like \"health-check\", \"create-notification\"".to_string();
+        return (StatusCode::OK, message);
+    }
+    // if command is "health-check", print ok
+    if req.text.as_str() == "health-check" {
+        let message = "Health Check OK".to_string();
+        return (StatusCode::OK, message);
     }
 
     let token = get_github_personal_access_token();
